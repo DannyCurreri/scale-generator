@@ -10,7 +10,10 @@
 // errors. Another common idiom is to use a helper type such as failure::Error
 // which does more or less the same thing but automatically.
 #[derive(Debug)]
-pub struct Error;
+pub enum Error {
+    InvalidTonic(String),
+    InvalidIntervals(String),
+}
 
 pub struct Scale {
     notes: Vec<String>,
@@ -30,10 +33,11 @@ impl Scale {
 
         let mut scale = Scale { notes: vec![] };
 
-        let note_bank = match Scale::signature(tonic).unwrap() {
-            Signature::Natural => sharps,
-            Signature::Sharp => sharps,
-            Signature::Flat => flats,
+        let note_bank = match Scale::signature(tonic) {
+            Ok(Signature::Natural) => sharps,
+            Ok(Signature::Sharp) => sharps,
+            Ok(Signature::Flat) => flats,
+            Err(e) => return Err(e),
         };
 
         // convert tonic to a Vec to capitalize first letter, then convert back to
@@ -64,6 +68,10 @@ impl Scale {
                 position += 3;
                 scale.notes.push(note_bank[position % 12].to_string());
             }
+            else {
+                return Err(Error::InvalidIntervals(
+                        "Invalid interval input string. Use M for whole step, m for half step, or A for augmented second.".to_string()));
+            }
         }
         Ok(scale)
     }
@@ -74,10 +82,11 @@ impl Scale {
 
         let mut scale = Scale { notes: vec![] };
 
-        let note_bank = match Scale::signature(tonic).unwrap() {
-            Signature::Natural => sharps,
-            Signature::Sharp => sharps,
-            Signature::Flat => flats,
+        let note_bank = match Scale::signature(tonic) {
+            Ok(Signature::Natural) => sharps,
+            Ok(Signature::Sharp) => sharps,
+            Ok(Signature::Flat) => flats,
+            Err(e) => return Err(e),
         };
 
         let start_position = note_bank.iter().position(|&x| x == tonic).unwrap();
@@ -107,7 +116,8 @@ impl Scale {
                 return Ok(Signature::Flat);
             }
         else {
-            return Err(Error);
+            return Err(Error::InvalidTonic(
+                    "Invalid tonic. Use letter A-G for maj or a-g for min, optionally followed # or b for accidental.".to_string()));
         }
     }
 }

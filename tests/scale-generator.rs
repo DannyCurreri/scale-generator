@@ -176,3 +176,38 @@ fn test_enigmatic() {
         &["G", "G#", "B", "C#", "D#", "F", "F#", "G"],
     );
 }
+
+#[test]
+#[should_panic]
+/// Invalid Tonic
+fn test_invalid_tonic_chromatic() {
+    process_chromatic_case(
+        "X",
+        &[
+            "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C",
+        ],
+    );
+}
+
+#[test]
+#[should_panic]
+/// Invalid Tonic
+fn test_invalid_tonic_diatonic() {
+    process_interval_case(
+        "X",
+        "mAMMMmm",
+        &["G", "G#", "B", "C#", "D#", "F", "F#", "G"],
+    );
+}
+
+#[test]
+#[should_panic]
+/// Invalid Interval
+fn test_invalid_interval() {
+    process_interval_case(
+        "C",
+        "mAMMMxm",
+        &["G", "G#", "B", "C#", "D#", "F", "F#", "G"],
+    );
+}
+
