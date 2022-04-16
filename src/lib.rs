@@ -1,18 +1,7 @@
-// You should change this.
-//
-// Depending on your implementation, there are a variety of potential errors
-// which might occur. They aren't checked by the test suite in order to
-// allow the greatest freedom of implementation, but real libraries should
-// provide useful, descriptive errors so that downstream code can react
-// appropriately.
-//
-// One common idiom is to define an Error enum which wraps all potential
-// errors. Another common idiom is to use a helper type such as failure::Error
-// which does more or less the same thing but automatically.
 #[derive(Debug)]
-pub enum Error {
-    InvalidTonic(String),
-    InvalidIntervals(String),
+pub enum Error<'a> {
+    InvalidTonic(&'a str),
+    InvalidIntervals(&'a str),
 }
 
 pub struct Scale {
@@ -26,17 +15,22 @@ enum Signature {
     Flat, 
 }
 
-impl Scale {
-    pub fn new(tonic: &str, intervals: &str) -> Result<Scale, Error> {
-        let sharps = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
-        let flats = ["A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"];
+const SHARPS: [&str; 12] = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
+const FLATS: [&str; 12] = ["A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"];
 
+pub mod error_messages {
+    pub const INVALID_TONIC: &str ="Invalid tonic. Use letter A-G for maj or a-g for min, optionally followed # or b for accidental.";
+    pub const INVALID_INTERVAL: &str ="Invalid interval input string. Use M for whole step, m for half step, or A for augmented second.";
+}
+
+impl Scale {
+    pub fn new<'a>(tonic: &'a str, intervals: &'a str) -> Result<Scale, Error<'a>> {
         let mut scale = Scale { notes: vec![] };
 
         let note_bank = match Scale::signature(tonic) {
-            Ok(Signature::Natural) => sharps,
-            Ok(Signature::Sharp) => sharps,
-            Ok(Signature::Flat) => flats,
+            Ok(Signature::Natural) => SHARPS,
+            Ok(Signature::Sharp) => SHARPS,
+            Ok(Signature::Flat) => FLATS,
             Err(e) => return Err(e),
         };
 
@@ -69,23 +63,19 @@ impl Scale {
                 scale.notes.push(note_bank[position % 12].to_string());
             }
             else {
-                return Err(Error::InvalidIntervals(
-                        "Invalid interval input string. Use M for whole step, m for half step, or A for augmented second.".to_string()));
+                return Err(Error::InvalidIntervals(error_messages::INVALID_INTERVAL));
             }
         }
         Ok(scale)
     }
 
-    pub fn chromatic(tonic: &str) -> Result<Scale, Error> {
-        let sharps = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
-        let flats = ["A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"];
-
+    pub fn chromatic<'a>(tonic: &'a str) -> Result<Scale, Error<'a>> {
         let mut scale = Scale { notes: vec![] };
 
         let note_bank = match Scale::signature(tonic) {
-            Ok(Signature::Natural) => sharps,
-            Ok(Signature::Sharp) => sharps,
-            Ok(Signature::Flat) => flats,
+            Ok(Signature::Natural) => SHARPS,
+            Ok(Signature::Sharp) => SHARPS,
+            Ok(Signature::Flat) => FLATS,
             Err(e) => return Err(e),
         };
 
@@ -116,8 +106,7 @@ impl Scale {
                 return Ok(Signature::Flat);
             }
         else {
-            return Err(Error::InvalidTonic(
-                    "Invalid tonic. Use letter A-G for maj or a-g for min, optionally followed # or b for accidental.".to_string()));
+            return Err(Error::InvalidTonic(error_messages::INVALID_INTERVAL));
         }
     }
 }
