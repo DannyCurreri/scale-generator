@@ -1,8 +1,5 @@
-#[derive(Debug)]
-pub enum Error<'a> {
-    InvalidTonic(&'a str),
-    InvalidIntervals(&'a str),
-}
+pub mod error;
+use error::Error;
 
 pub struct Scale {
     notes: Vec<String>,
@@ -17,11 +14,6 @@ enum Signature {
 
 const SHARPS: [&str; 12] = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
 const FLATS: [&str; 12] = ["A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"];
-
-pub mod error_messages {
-    pub const INVALID_TONIC: &str ="Invalid tonic. Use letter A-G for maj or a-g for min, optionally followed # or b for accidental.";
-    pub const INVALID_INTERVAL: &str ="Invalid interval input string. Use M for whole step, m for half step, or A for augmented second.";
-}
 
 impl Scale {
     pub fn new<'a>(tonic: &'a str, intervals: &'a str) -> Result<Scale, Error<'a>> {
@@ -63,7 +55,7 @@ impl Scale {
                 scale.notes.push(note_bank[position % 12].to_string());
             }
             else {
-                return Err(Error::InvalidIntervals(error_messages::INVALID_INTERVAL));
+                return Err(Error::InvalidIntervals(error::messages::INVALID_INTERVAL));
             }
         }
         Ok(scale)
@@ -106,7 +98,7 @@ impl Scale {
                 return Ok(Signature::Flat);
             }
         else {
-            return Err(Error::InvalidTonic(error_messages::INVALID_INTERVAL));
+            return Err(Error::InvalidTonic(error::messages::INVALID_INTERVAL));
         }
     }
 }
