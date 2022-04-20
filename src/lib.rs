@@ -1,7 +1,10 @@
 pub mod error;
 use error::Error;
 
-pub struct Scale {
+pub struct Scale<'a> {
+    tonic: &'a str,
+    mode: Mode,
+    signature: Signature,
     notes: Vec<String>,
 }
 
@@ -12,12 +15,32 @@ enum Signature {
     Flat, 
 }
 
+#[derive(Copy, Clone)]
+pub enum Mode {
+    Ionian,
+    Aeolian,
+}
+
+pub mod intervals {
+    pub const IONIAN: &str = "MMmMMMm";
+    pub const AEOLIAN: &str = "MmMMmMM";
+}
+
 const SHARPS: [&str; 12] = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
 const FLATS: [&str; 12] = ["A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"];
 
-impl Scale {
-    pub fn new<'a>(tonic: &'a str, intervals: &'a str) -> Result<Scale, Error<'a>> {
-        let mut scale = Scale { notes: vec![] };
+impl<'a> Scale<'a> {
+    pub fn new(tonic: &'a str, mode: Mode) -> Result<Scale<'a>, Error<'a>> {
+        let signature = match Scale::signature(tonic) {
+            Ok(s) => s,
+            Err(e) => return Err(e),
+        };
+
+        let mut scale = Scale { 
+            tonic: tonic,
+            mode: mode,
+            signature: signature,
+            notes: vec![] };
 
         let note_bank = match Scale::signature(tonic) {
             Ok(Signature::Natural) => SHARPS,
@@ -37,9 +60,13 @@ impl Scale {
             .iter()
             .position(|&x| x == tonic)
             .unwrap();
-        println!("start position: {:?}", position);
 
         scale.notes.push(note_bank[position].to_string());
+
+        let intervals = match mode {
+            Mode::Ionian => "MMmMMMm",
+            Mode::Aeolian => "MmMMmMM",
+        };
 
         for step in intervals.chars() {
             if step == 'M' {
@@ -61,8 +88,17 @@ impl Scale {
         Ok(scale)
     }
 
-    pub fn chromatic<'a>(tonic: &'a str) -> Result<Scale, Error<'a>> {
-        let mut scale = Scale { notes: vec![] };
+    pub fn chromatic(tonic: &'a str) -> Result<Scale, Error<'a>> {
+        let signature = match Scale::signature(tonic) {
+            Ok(s) => s,
+            Err(e) => return Err(e),
+        };
+
+        let mut scale = Scale { 
+            tonic: tonic,
+            mode: Mode::Ionian,
+            signature: signature,
+            notes: vec![] };
 
         let note_bank = match Scale::signature(tonic) {
             Ok(Signature::Natural) => SHARPS,
@@ -72,7 +108,6 @@ impl Scale {
         };
 
         let start_position = note_bank.iter().position(|&x| x == tonic).unwrap();
-        println!("start position: {:?}", start_position);
 
         for i in start_position..start_position+13 {
             scale.notes.push(String::from(note_bank[i % 12]))
@@ -85,7 +120,7 @@ impl Scale {
         self.notes.clone()
     }
 
-    fn signature(tonic: &str) -> Result<Signature, Error> {
+    fn signature(tonic: &'a str) -> Result<Signature, Error> {
         if ["C", "a"].contains(&tonic) {
             return Ok(Signature::Natural);
         }
@@ -98,7 +133,7 @@ impl Scale {
                 return Ok(Signature::Flat);
             }
         else {
-            return Err(Error::InvalidTonic(error::messages::INVALID_INTERVAL));
+            return Err(Error::InvalidTonic(error::messages::INVALID_TONIC));
         }
     }
 }
