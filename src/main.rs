@@ -19,9 +19,9 @@ fn main() {
     };
 
     match scale {
-        Ok(s) => println!("{} scale: {:?}", tonic, s.enumerate()),
-        Err(Error::InvalidTonic(e)) => println!("Error: {}", e),
-        Err(Error::InvalidIntervals(e)) => println!("Error: {}", e),
+        Ok(s) => println!("{} scale: {:?}", s.name(), s.enumerate()),
+        Err(Error::InvalidTonic(e)) => eprintln!("Error: {}", e),
+        Err(Error::InvalidIntervals(e)) => eprintln!("Error: {}", e),
     }
 }
 

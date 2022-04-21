@@ -5,7 +5,6 @@ pub struct Scale<'a> {
     tonic: &'a str,
     mode: Mode,
     signature: Signature,
-    notes: Vec<String>,
 }
 
 #[derive(PartialEq, Debug)]
@@ -15,19 +14,42 @@ enum Signature {
     Flat, 
 }
 
+impl Signature {
+    fn chromatic_note_range(&self) -> [&str; 12] {
+        match *self {
+            Signature::Natural => 
+                ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"],
+            Signature::Sharp => 
+                ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"],
+            Signature::Flat =>
+                ["A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"],
+        }
+    }
+}
+
 #[derive(Copy, Clone)]
 pub enum Mode {
     Ionian,
     Aeolian,
+    Chromatic,
 }
 
-pub mod intervals {
-    pub const IONIAN: &str = "MMmMMMm";
-    pub const AEOLIAN: &str = "MmMMmMM";
+impl Mode {
+    fn intervals(&self) -> &'static str {
+        match *self {
+            Mode::Ionian => "MMmMMMm",
+            Mode::Aeolian => "MmMMmMM",
+            Mode::Chromatic => "mmmmmmmmmmmm",
+        }
+    }
+    fn name(&self) -> &'static str {
+        match *self {
+            Mode::Ionian => "major",
+            Mode::Aeolian => "minor",
+            Mode::Chromatic => "chromatic",
+        }
+    }
 }
-
-const SHARPS: [&str; 12] = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
-const FLATS: [&str; 12] = ["A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"];
 
 impl<'a> Scale<'a> {
     pub fn new(tonic: &'a str, mode: Mode) -> Result<Scale<'a>, Error<'a>> {
@@ -36,22 +58,19 @@ impl<'a> Scale<'a> {
             Err(e) => return Err(e),
         };
 
-        let mut scale = Scale { 
+        Ok(Scale { 
             tonic: tonic,
             mode: mode,
             signature: signature,
-            notes: vec![] };
+        })
+    }
 
-        let note_bank = match Scale::signature(tonic) {
-            Ok(Signature::Natural) => SHARPS,
-            Ok(Signature::Sharp) => SHARPS,
-            Ok(Signature::Flat) => FLATS,
-            Err(e) => return Err(e),
-        };
-
-        // convert tonic to a Vec to capitalize first letter, then convert back to
-        // str
-        let mut v: Vec<char> = tonic.chars().collect();
+    pub fn enumerate(&self) -> Vec<String> {
+        let mut notes = vec![];
+        let note_bank = self.signature.chromatic_note_range();
+        // convert tonic to a Vec to capitalize first letter, 
+        // then convert back to str
+        let mut v: Vec<char> = self.tonic.chars().collect();
         v[0] = v[0].to_uppercase().nth(0).unwrap();
         let s: String = v.into_iter().collect();
         let tonic = &s;
@@ -61,63 +80,32 @@ impl<'a> Scale<'a> {
             .position(|&x| x == tonic)
             .unwrap();
 
-        scale.notes.push(note_bank[position].to_string());
+        notes.push(note_bank[position].to_string());
 
-        let intervals = match mode {
-            Mode::Ionian => "MMmMMMm",
-            Mode::Aeolian => "MmMMmMM",
-        };
-
+        let intervals = self.mode.intervals();
         for step in intervals.chars() {
             if step == 'M' {
                 position += 2;
-                scale.notes.push(note_bank[position % 12].to_string());
+                notes.push(note_bank[position % 12].to_string());
             }
             else if step == 'm' {
                 position += 1;
-                scale.notes.push(note_bank[position % 12].to_string());
+                notes.push(note_bank[position % 12].to_string());
             }
             else if step == 'A' {
                 position += 3;
-                scale.notes.push(note_bank[position % 12].to_string());
-            }
-            else {
-                return Err(Error::InvalidIntervals(error::messages::INVALID_INTERVAL));
+                notes.push(note_bank[position % 12].to_string());
             }
         }
-        Ok(scale)
+        notes
+        //self.notes.clone()
     }
-
-    pub fn chromatic(tonic: &'a str) -> Result<Scale, Error<'a>> {
-        let signature = match Scale::signature(tonic) {
-            Ok(s) => s,
-            Err(e) => return Err(e),
-        };
-
-        let mut scale = Scale { 
-            tonic: tonic,
-            mode: Mode::Ionian,
-            signature: signature,
-            notes: vec![] };
-
-        let note_bank = match Scale::signature(tonic) {
-            Ok(Signature::Natural) => SHARPS,
-            Ok(Signature::Sharp) => SHARPS,
-            Ok(Signature::Flat) => FLATS,
-            Err(e) => return Err(e),
-        };
-
-        let start_position = note_bank.iter().position(|&x| x == tonic).unwrap();
-
-        for i in start_position..start_position+13 {
-            scale.notes.push(String::from(note_bank[i % 12]))
-        }
-
-        Ok(scale)
-    }
-
-    pub fn enumerate(&self) -> Vec<String> {
-        self.notes.clone()
+    pub fn name(&self) -> String {
+        let mut name = String::new();
+        name.push_str(self.tonic);
+        name.push_str(" ");
+        name.push_str(self.mode.name());
+        name
     }
 
     fn signature(tonic: &'a str) -> Result<Signature, Error> {
