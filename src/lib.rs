@@ -1,5 +1,46 @@
+use std::env;
 pub mod error;
 use error::Error;
+
+pub struct Config {
+    pub tonic: String,
+    pub mode: Mode,
+}
+
+impl Config {
+    pub fn new(args: env::Args) -> Result<Config, String> {
+        let mut args = args;
+        args.next();
+
+        let tonic = match args.next() {
+            Some(s) => s,
+            None => return Err("No tonic note provided".to_string()),
+        };
+
+        let mode = match args.next() {
+            None => {
+                if tonic.chars().next().unwrap().is_uppercase() {
+                    Mode::Ionian
+                } else {
+                    Mode::Aeolian
+                }
+            },
+            Some(arg) => {
+                match arg.to_lowercase().as_str() {
+                    "major" => Mode::Ionian,
+                    "maj" => Mode::Ionian,
+                    "ionian" => Mode::Ionian,
+                    "minor" => Mode::Aeolian,
+                    "min" => Mode::Aeolian,
+                    "aeolian" => Mode::Aeolian,
+                    "chromatic" => Mode::Chromatic,
+                    other => return Err(format!("Invalid argument: {}", other)),
+                }
+            },
+        };
+        Ok(Config{ tonic, mode })
+    }
+}
 
 pub struct Scale<'a> {
     tonic: &'a str,
@@ -35,11 +76,11 @@ pub enum Mode {
 }
 
 impl Mode {
-    fn intervals(&self) -> &'static str {
+    fn intervals(&self) -> Vec<usize> {
         match *self {
-            Mode::Ionian => "MMmMMMm",
-            Mode::Aeolian => "MmMMmMM",
-            Mode::Chromatic => "mmmmmmmmmmmm",
+            Mode::Ionian => vec![2,2,1,2,2,2,1],
+            Mode::Aeolian => vec![2,1,2,2,1,2,2],
+            Mode::Chromatic => vec![1,1,1,1,1,1,1,1,1,1,1,1],
         }
     }
     fn name(&self) -> &'static str {
@@ -82,24 +123,14 @@ impl<'a> Scale<'a> {
 
         notes.push(note_bank[position].to_string());
 
-        let intervals = self.mode.intervals();
-        for step in intervals.chars() {
-            if step == 'M' {
-                position += 2;
-                notes.push(note_bank[position % 12].to_string());
-            }
-            else if step == 'm' {
-                position += 1;
-                notes.push(note_bank[position % 12].to_string());
-            }
-            else if step == 'A' {
-                position += 3;
-                notes.push(note_bank[position % 12].to_string());
-            }
+        //let intervals = self.mode.intervals();
+        for step in self.mode.intervals() {
+            position += step;
+            notes.push(note_bank[position % 12].to_string());
         }
         notes
-        //self.notes.clone()
     }
+
     pub fn name(&self) -> String {
         let mut name = String::new();
         name.push_str(self.tonic);

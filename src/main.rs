@@ -4,21 +4,12 @@ use scale_generator::*;
 use error::Error;
 
 fn main() {
-    let mut args = env::args();
-    args.next();
-
-    let tonic = args.next().unwrap_or_else(|| {
-        eprintln!("No tonic note provided");
+    let config = Config::new(env::args()).unwrap_or_else(|e| {
+        eprintln!("{}", e);
         process::exit(1);
     });
 
-    let scale = if tonic.chars().next().unwrap().is_uppercase() {
-        Scale::new(&tonic, Mode::Ionian)
-    } else {
-        Scale::new(&tonic, Mode::Aeolian)
-    };
-
-    match scale {
+    match Scale::new(&config.tonic, config.mode) {
         Ok(s) => println!("{} scale: {:?}", s.name(), s.enumerate()),
         Err(Error::InvalidTonic(e)) => eprintln!("Error: {}", e),
         Err(Error::InvalidIntervals(e)) => eprintln!("Error: {}", e),
