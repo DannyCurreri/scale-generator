@@ -1,13 +1,21 @@
-#[derive(PartialEq, Debug)]
-struct Note {
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub struct Note {
     letter: Letter,
     accidental_count: i32,
 }
 
 impl Note {
-    fn next(&self, step: i32) -> Self {
+    pub fn new(letter: Letter, accidental_count: i32) -> Self {
+        Note {
+            letter,
+            accidental_count,
+        }
+    }
+
+    pub fn next(&self, step: i32) -> Self {
         let letter = self.letter.next();
-        let accidental_count = step - letter.incremental_value();
+        let accidental_count = 
+            self.accidental_count + step - letter.incremental_value();
 
         Note {
             letter,
@@ -15,7 +23,7 @@ impl Note {
         }
     }
     
-    fn as_string(&self) -> String {
+    pub fn as_string(&self) -> String {
         let mut accidental = String::new();
         if self.accidental_count > 0 {
             for _ in 0..self.accidental_count {
@@ -30,8 +38,8 @@ impl Note {
     }
 }
 
-#[derive(PartialEq, Debug)]
-enum Letter {
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub enum Letter {
     A,
     B,
     C,
@@ -153,7 +161,7 @@ mod tests {
             letter: Letter::B, 
             accidental_count: 1, 
         };
-        assert_eq!(note.next(2).as_string(), "C#");
+        assert_eq!(note.next(2).as_string(), "C##");
     }
 
     #[test]
@@ -162,7 +170,7 @@ mod tests {
             letter: Letter::B, 
             accidental_count: 1, 
         };
-        assert_eq!(note.next(1).as_string(), "C");
+        assert_eq!(note.next(1).as_string(), "C#");
     }
 
     #[test]
