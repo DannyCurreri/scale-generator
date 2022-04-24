@@ -86,52 +86,47 @@ fn test_minor_scale_with_flats() {
     );
 }
 
-//#[test]
-//#[ignore]
-///// Dorian mode
-//fn test_dorian_mode() {
-//    process_interval_case("d", "MmMMMmM", &["D", "E", "F", "G", "A", "B", "C", "D"]);
-//}
-//
-//#[test]
-//#[ignore]
-///// Mixolydian mode
-//fn test_mixolydian_mode() {
-//    process_interval_case(
-//        "Eb",
-//        "MMmMMmM",
-//        &["Eb", "F", "G", "Ab", "Bb", "C", "Db", "Eb"],
-//    );
-//}
-//
-//#[test]
-//#[ignore]
-///// Lydian mode
-//fn test_lydian_mode() {
-//    process_interval_case(
-//        "a",
-//        "MMMmMMm",
-//        &["A", "B", "C#", "D#", "E", "F#", "G#", "A"],
-//    );
-//}
-//
-//#[test]
-//#[ignore]
-///// Phrygian mode
-//fn test_phrygian_mode() {
-//    process_interval_case("e", "mMMMmMM", &["E", "F", "G", "A", "B", "C", "D", "E"]);
-//}
-//
-//#[test]
-//#[ignore]
+#[test]
+/// Dorian mode
+fn test_dorian_mode() {
+    process_interval_case("d", Mode::Dorian, &["D", "E", "F", "G", "A", "B", "C", "D"]);
+}
+
+#[test]
+/// Mixolydian mode
+fn test_mixolydian_mode() {
+    process_interval_case(
+        "Eb",
+        Mode::Mixolydian,
+        &["Eb", "F", "G", "Ab", "Bb", "C", "Db", "Eb"],
+    );
+}
+
+#[test]
+/// Lydian mode
+fn test_lydian_mode() {
+    process_interval_case(
+        "a",
+        Mode::Lydian,
+        &["A", "B", "C#", "D#", "E", "F#", "G#", "A"],
+    );
+}
+
+#[test]
+/// Phrygian mode
+fn test_phrygian_mode() {
+    process_interval_case("e", Mode::Phrygian, &["E", "F", "G", "A", "B", "C", "D", "E"]);
+}
+
+#[test]
 ///// Locrian mode
-//fn test_locrian_mode() {
-//    process_interval_case(
-//        "g",
-//        "mMMmMMM",
-//        &["G", "Ab", "Bb", "C", "Db", "Eb", "F", "G"],
-//    );
-//}
+fn test_locrian_mode() {
+    process_interval_case(
+        "g",
+        Mode::Locrian,
+        &["G", "Ab", "Bb", "C", "Db", "Eb", "F", "G"],
+    );
+}
 //
 //#[test]
 //#[ignore]

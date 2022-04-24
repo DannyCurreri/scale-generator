@@ -1,6 +1,6 @@
 use std::env;
 pub mod error;
-use error::Error;
+mod notes;
 
 pub struct Config {
     pub tonic: String,
@@ -27,12 +27,17 @@ impl Config {
             },
             Some(arg) => {
                 match arg.to_lowercase().as_str() {
-                    "major" => Mode::Ionian,
                     "maj" => Mode::Ionian,
+                    "major" => Mode::Ionian,
                     "ionian" => Mode::Ionian,
-                    "minor" => Mode::Aeolian,
+                    "dorian" => Mode::Dorian,
+                    "phrygian" => Mode::Phrygian,
+                    "lydian" => Mode::Lydian,
+                    "mixolydian" => Mode::Mixolydian,
                     "min" => Mode::Aeolian,
+                    "minor" => Mode::Aeolian,
                     "aeolian" => Mode::Aeolian,
+                    "locrian" => Mode::Locrian,
                     "chromatic" => Mode::Chromatic,
                     other => return Err(format!("Invalid argument: {}", other)),
                 }
@@ -42,27 +47,24 @@ impl Config {
     }
 }
 
-pub struct Scale<'a> {
-    tonic: &'a str,
-    mode: Mode,
-    signature: Signature,
-}
-
 #[derive(PartialEq, Debug)]
 enum Signature {
-    Natural,
     Sharp,
     Flat, 
+    AllSharp,
+    AllFlat,
 }
 
 impl Signature {
     fn chromatic_note_range(&self) -> [&str; 12] {
         match *self {
-            Signature::Natural => 
-                ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"],
             Signature::Sharp => 
                 ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"],
-            Signature::Flat =>
+            Signature::AllSharp => // For key of C# and associated modes
+                ["A", "A#", "B", "B#", "C#", "D", "D#", "E", "E#", "F#", "G", "G#"],
+            Signature::Flat => 
+                ["A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"],
+            Signature::AllFlat => // For key of Cb and associated modes
                 ["A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"],
         }
     }
@@ -71,7 +73,18 @@ impl Signature {
 #[derive(Copy, Clone)]
 pub enum Mode {
     Ionian,
+    Dorian,
+    Phrygian,
+    Lydian,
+    Mixolydian,
     Aeolian,
+    Locrian,
+    Chromatic,
+}
+
+enum Family {
+    Major,
+    Minor,
     Chromatic,
 }
 
@@ -79,28 +92,63 @@ impl Mode {
     fn intervals(&self) -> Vec<usize> {
         match *self {
             Mode::Ionian => vec![2,2,1,2,2,2,1],
+            Mode::Dorian => vec![2,1,2,2,2,1,2],
+            Mode::Phrygian => vec![1,2,2,2,1,2,2],
+            Mode::Lydian => vec![2,2,2,1,2,2,1],
+            Mode::Mixolydian => vec![2,2,1,2,2,1,2],
             Mode::Aeolian => vec![2,1,2,2,1,2,2],
+            Mode::Locrian => vec![1,2,2,1,2,2,2],
             Mode::Chromatic => vec![1,1,1,1,1,1,1,1,1,1,1,1],
+        }
+    }
+    fn family(&self) -> Family {
+        match *self {
+            Mode::Ionian => Family::Major,
+            Mode::Dorian => Family::Minor,
+            Mode::Phrygian => Family::Minor,
+            Mode::Lydian => Family::Major,
+            Mode::Mixolydian => Family::Major,
+            Mode::Aeolian => Family::Minor,
+            Mode::Locrian => Family::Minor,
+            Mode::Chromatic => Family::Chromatic,
         }
     }
     fn name(&self) -> &'static str {
         match *self {
             Mode::Ionian => "major",
+            Mode::Dorian => "dorian",
+            Mode::Phrygian => "phrygian",
+            Mode::Lydian => "lydian",
+            Mode::Mixolydian => "mixolydian",
             Mode::Aeolian => "minor",
+            Mode::Locrian => "locrian",
             Mode::Chromatic => "chromatic",
         }
     }
 }
 
-impl<'a> Scale<'a> {
-    pub fn new(tonic: &'a str, mode: Mode) -> Result<Scale<'a>, Error<'a>> {
-        let signature = match Scale::signature(tonic) {
+pub struct Scale {
+    tonic: String,
+    mode: Mode,
+    signature: Signature,
+}
+
+impl Scale {
+    pub fn new(tonic: &str, mode: Mode) -> Result<Scale, &'static str> {
+        // convert tonic to a Vec to capitalize first letter, 
+        // then convert back to str
+        let mut v: Vec<char> = tonic.chars().collect();
+        v[0] = v[0].to_uppercase().nth(0).unwrap();
+        let s: String = v.into_iter().collect();
+        let tonic = s.as_str();
+
+        let signature = match Scale::signature(tonic, mode) {
             Ok(s) => s,
             Err(e) => return Err(e),
         };
 
         Ok(Scale { 
-            tonic: tonic,
+            tonic: tonic.to_string(),
             mode: mode,
             signature: signature,
         })
@@ -109,21 +157,14 @@ impl<'a> Scale<'a> {
     pub fn enumerate(&self) -> Vec<String> {
         let mut notes = vec![];
         let note_bank = self.signature.chromatic_note_range();
-        // convert tonic to a Vec to capitalize first letter, 
-        // then convert back to str
-        let mut v: Vec<char> = self.tonic.chars().collect();
-        v[0] = v[0].to_uppercase().nth(0).unwrap();
-        let s: String = v.into_iter().collect();
-        let tonic = &s;
 
         let mut position = note_bank
             .iter()
-            .position(|&x| x == tonic)
+            .position(|&x| x == self.tonic)
             .unwrap();
 
         notes.push(note_bank[position].to_string());
 
-        //let intervals = self.mode.intervals();
         for step in self.mode.intervals() {
             position += step;
             notes.push(note_bank[position % 12].to_string());
@@ -133,54 +174,43 @@ impl<'a> Scale<'a> {
 
     pub fn name(&self) -> String {
         let mut name = String::new();
-        name.push_str(self.tonic);
+        name.push_str(&self.tonic);
         name.push_str(" ");
         name.push_str(self.mode.name());
         name
     }
 
-    fn signature(tonic: &'a str) -> Result<Signature, Error> {
-        if ["C", "a"].contains(&tonic) {
-            return Ok(Signature::Natural);
-        }
-        if ["G", "D", "A", "E", "B", "F#", "e", "b", "f#", "c#", "g#", "d#"]
-            .contains(&tonic) {
-                return Ok(Signature::Sharp);
+    fn signature(tonic: &str, mode: Mode) -> Result<Signature, &'static str> {
+        match mode.family() {
+            Family::Major => {
+                if ["C", "G", "D", "A", "E", "B", "F#"].contains(&tonic) {
+                    return Ok(Signature::Sharp);
+                } else if ["F", "Bb", "Eb", "Ab", "Db", "Gb"].contains(&tonic) {
+                    return Ok(Signature::Flat);
+                } else {
+                    return Err("Invalid Tonic");
+                }
             }
-        if ["F", "Bb", "Eb", "Ab", "Db", "Gb", "d", "g", "c", "f", "bb", "eb"]
-            .contains(&tonic) {
-                return Ok(Signature::Flat);
+            Family::Minor => {
+                if ["A", "E", "B", "F#", "C#", "G#", "D#"].contains(&tonic) {
+                    return Ok(Signature::Sharp);
+                } else if ["D", "G", "C", "F", "Bb", "Eb"].contains(&tonic) {
+                    return Ok(Signature::Flat);
+                } else if "A#" == tonic {
+                    return Ok(Signature::AllSharp);
+                } else {
+                    return Err("Invalid Tonic");
+                }
             }
-        else {
-            return Err(Error::InvalidTonic(error::messages::INVALID_TONIC));
+            Family::Chromatic => {
+                if ["C", "G", "D", "A", "E", "B", "F#"].contains(&tonic) {
+                    return Ok(Signature::Sharp);
+                } else if ["F", "Bb", "Eb", "Ab", "Db", "Gb"].contains(&tonic) {
+                    return Ok(Signature::Flat);
+                } else {
+                    return Err("Invalid Tonic");
+                }
+            }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_natural() {
-        assert_eq!(Scale::signature("C").unwrap(), Signature::Natural);
-    }
-
-    #[test]
-    fn test_sharp() {
-        assert_eq!(Scale::signature("b").unwrap(), Signature::Sharp);
-        assert_eq!(Scale::signature("F#").unwrap(), Signature::Sharp);
-    }
-
-    #[test]
-    fn test_flat() {
-        assert_eq!(Scale::signature("F").unwrap(), Signature::Flat);
-        assert_eq!(Scale::signature("eb").unwrap(), Signature::Flat);
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_err() {
-        Scale::signature("x").unwrap();
     }
 }
