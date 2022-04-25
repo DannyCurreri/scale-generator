@@ -1,51 +1,6 @@
 use std::env;
-pub mod error;
 pub mod notes;
 use notes::Note;
-
-pub struct Config {
-    pub tonic: String,
-    pub mode: Mode,
-}
-
-impl Config {
-    pub fn new(args: env::Args) -> Result<Config, String> {
-        let mut args = args;
-        args.next();
-
-        let tonic = match args.next() {
-            Some(s) => s,
-            None => return Err("No tonic note provided".to_string()),
-        };
-
-        let mode = match args.next() {
-            None => {
-                if tonic.chars().next().unwrap().is_uppercase() {
-                    Mode::Ionian
-                } else {
-                    Mode::Aeolian
-                }
-            },
-            Some(arg) => {
-                match arg.to_lowercase().as_str() {
-                    "maj" => Mode::Ionian,
-                    "major" => Mode::Ionian,
-                    "ionian" => Mode::Ionian,
-                    "dorian" => Mode::Dorian,
-                    "phrygian" => Mode::Phrygian,
-                    "lydian" => Mode::Lydian,
-                    "mixolydian" => Mode::Mixolydian,
-                    "min" => Mode::Aeolian,
-                    "minor" => Mode::Aeolian,
-                    "aeolian" => Mode::Aeolian,
-                    "locrian" => Mode::Locrian,
-                    other => return Err(format!("Invalid argument: {}", other)),
-                }
-            },
-        };
-        Ok(Config{ tonic, mode })
-    }
-}
 
 #[derive(Copy, Clone)]
 pub enum Mode {
@@ -73,13 +28,13 @@ impl Mode {
 
     fn name(&self) -> &'static str {
         match *self {
-            Mode::Ionian     => "major",
-            Mode::Dorian     => "dorian",
-            Mode::Phrygian   => "phrygian",
-            Mode::Lydian     => "lydian",
-            Mode::Mixolydian => "mixolydian",
-            Mode::Aeolian    => "minor",
-            Mode::Locrian    => "locrian",
+            Mode::Ionian     => "Major",
+            Mode::Dorian     => "Dorian",
+            Mode::Phrygian   => "Phrygian",
+            Mode::Lydian     => "Lydian",
+            Mode::Mixolydian => "Mixolydian",
+            Mode::Aeolian    => "Minor",
+            Mode::Locrian    => "Locrian",
         }
     }
 }
@@ -90,11 +45,50 @@ pub struct Scale {
 }
 
 impl Scale {
-    pub fn new(tonic: Note, mode: Mode) -> Result<Scale, &'static str> {
-        Ok(Scale { 
-            tonic,
-            mode,
-        })
+    pub fn new(tonic: Note, mode: Mode) -> Self  {
+        Scale { tonic, mode }
+    }
+
+    pub fn from_args(args: env::Args) -> Result<Self, String> {
+        let mut args = args;
+        args.next();
+
+        let tonic_str = match args.next() {
+            Some(s) => s,
+            None => return Err("No tonic note provided".to_string()),
+        };
+
+        let tonic = match Note::from_string(&tonic_str) {
+            Ok(note) => note,
+            Err(e) => return Err(e.to_string()),
+        };
+
+        let mode = match args.next() {
+            None => {
+                if tonic_str.chars().next().unwrap().is_uppercase() {
+                    Mode::Ionian
+                } else {
+                    Mode::Aeolian
+                }
+            },
+            Some(arg) => {
+                match arg.to_lowercase().as_str() {
+                    "maj" => Mode::Ionian,
+                    "major" => Mode::Ionian,
+                    "ionian" => Mode::Ionian,
+                    "dorian" => Mode::Dorian,
+                    "phrygian" => Mode::Phrygian,
+                    "lydian" => Mode::Lydian,
+                    "mixolydian" => Mode::Mixolydian,
+                    "min" => Mode::Aeolian,
+                    "minor" => Mode::Aeolian,
+                    "aeolian" => Mode::Aeolian,
+                    "locrian" => Mode::Locrian,
+                    other => return Err(format!("Invalid argument: {}", other)),
+                }
+            },
+        };
+        Ok(Scale::new(tonic, mode))
     }
 
     pub fn enumerate(&self) -> Vec<String> {

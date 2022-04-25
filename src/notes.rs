@@ -11,6 +11,33 @@ impl Note {
             accidental_count,
         }
     }
+    
+    pub fn from_string(input: &str) -> Result<Self, &'static str> {
+        let mut input = input.chars();
+        let letter = match input.next() {
+            Some(c) => match c.to_ascii_uppercase() {
+                'A' => Letter::A,
+                'B' => Letter::B,
+                'C' => Letter::C,
+                'D' => Letter::D,
+                'E' => Letter::E,
+                'F' => Letter::F,
+                'G' => Letter::G,
+                _ => return Err("Invalid tonic note"),
+            },
+            None => return Err("No tonic note provided."),
+        };
+        let accidental_count = match input.next() {
+            None => 0,
+            Some('#') => 1,
+            Some('b') => -1,
+            _ => return Err("Invalid tonic note"),
+        };
+        if let Some(_) = input.next() {
+            return Err("Invalid tonic note");
+        }
+        Ok(Note::new(letter, accidental_count))
+    }
 
     pub fn next(&self, step: i32) -> Self {
         let letter = self.letter.next();
@@ -99,14 +126,12 @@ mod tests {
 
     #[test]
     fn test_incr_value() {
-        let mut note = Letter::A;
         assert_eq!(Letter::A.incremental_value(), 2);
         assert_eq!(Letter::C.incremental_value(), 1);
     }
 
     #[test]
     fn test_str() {
-        let mut note = Letter::A;
         assert_eq!(Letter::A.as_str(), "A");
     }
 
@@ -156,7 +181,7 @@ mod tests {
     }
 
     #[test]
-    fn test_Bsharp_whole_step() {
+    fn test_bsharp_whole_step() {
         let note = Note { 
             letter: Letter::B, 
             accidental_count: 1, 
@@ -165,7 +190,7 @@ mod tests {
     }
 
     #[test]
-    fn test_Bsharp_half_step() {
+    fn test_bsharp_half_step() {
         let note = Note { 
             letter: Letter::B, 
             accidental_count: 1, 
@@ -174,7 +199,7 @@ mod tests {
     }
 
     #[test]
-    fn test_E_half_step() {
+    fn test_e_half_step() {
         let note = Note { 
             letter: Letter::E, 
             accidental_count: 0, 
@@ -183,12 +208,71 @@ mod tests {
     }
 
     #[test]
-    fn test_E_whole_step() {
+    fn test_e_whole_step() {
         let note = Note { 
             letter: Letter::E, 
             accidental_count: 0, 
         };
         assert_eq!(note.next(2).as_string(), "F#");
+    }
+
+    #[test]
+    fn test_from_empty_string() {
+        if let Err(e) = Note::from_string("") {
+            assert_eq!(e, "No tonic note provided.");
+        } else { 
+            panic!();
+        }
+    }
+
+    #[test]
+    fn test_from_invalid_string() {
+        if let Err(e) = Note::from_string("X") {
+            assert_eq!(e, "Invalid tonic note");
+        } else {
+            panic!();
+        }
+    }
+
+    #[test]
+    fn test_from_invalid_accidental() {
+        if let Err(e) = Note::from_string("A@") {
+            assert_eq!(e, "Invalid tonic note");
+        } else {
+            panic!();
+        }
+    }
+
+    #[test]
+    fn test_natural_from_string() {
+        let mut note = Note::from_string("A");
+        assert_eq!(note, 
+                   Ok(Note {
+                       letter: Letter::A,
+                       accidental_count: 0
+                   }));
+        note = Note::from_string("F");
+        assert_eq!(note, 
+                   Ok(Note {
+                       letter: Letter::F,
+                       accidental_count: 0
+                   }));
+    }
+
+    #[test]
+    fn test_accidental_from_string() {
+        let mut note = Note::from_string("A#");
+        assert_eq!(note, 
+                   Ok(Note {
+                       letter: Letter::A,
+                       accidental_count: 1
+                   }));
+        note = Note::from_string("Gb");
+        assert_eq!(note, 
+                   Ok(Note {
+                       letter: Letter::G,
+                       accidental_count: -1 
+                   }));
     }
 
 }

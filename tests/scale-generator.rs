@@ -13,7 +13,7 @@ use scale_generator::notes::{Note,Letter};
 /// All cases for the `interval` property are implemented
 /// in terms of this function.
 fn process_interval_case(tonic: Note, mode: Mode, expected: &[&str]) {
-    let s = Scale::new(tonic, mode).unwrap();
+    let s = Scale::new(tonic, mode);
     assert_eq!(s.enumerate(), expected);
 }
 
