@@ -11,7 +11,7 @@ impl Note {
             accidental_count,
         }
     }
-    
+
     pub fn from_string(input: &str) -> Result<Self, &'static str> {
         let mut input = input.chars();
         let letter = match input.next() {
@@ -41,15 +41,14 @@ impl Note {
 
     pub fn next(&self, step: i32) -> Self {
         let letter = self.letter.next();
-        let accidental_count = 
-            self.accidental_count + step - letter.incremental_value();
+        let accidental_count = self.accidental_count + step - letter.incremental_value();
 
         Note {
             letter,
             accidental_count,
         }
     }
-    
+
     pub fn as_string(&self) -> String {
         let mut accidental = String::new();
         if self.accidental_count > 0 {
@@ -137,8 +136,8 @@ mod tests {
 
     #[test]
     fn test_sharp_note() {
-        let note = Note { 
-            letter: Letter::A, 
+        let note = Note {
+            letter: Letter::A,
             accidental_count: 1,
         };
         assert_eq!(note.as_string(), "A#");
@@ -146,72 +145,72 @@ mod tests {
 
     #[test]
     fn test_flat_note() {
-        let note = Note { 
-            letter: Letter::A, 
-            accidental_count: -1, 
+        let note = Note {
+            letter: Letter::A,
+            accidental_count: -1,
         };
         assert_eq!(note.as_string(), "Ab");
     }
 
     #[test]
     fn test_natural_note() {
-        let note = Note { 
-            letter: Letter::A, 
-            accidental_count: 0, 
+        let note = Note {
+            letter: Letter::A,
+            accidental_count: 0,
         };
         assert_eq!(note.as_string(), "A");
     }
 
     #[test]
     fn test_simple_whole_step() {
-        let note = Note { 
-            letter: Letter::A, 
-            accidental_count: 0, 
+        let note = Note {
+            letter: Letter::A,
+            accidental_count: 0,
         };
         assert_eq!(note.next(2).as_string(), "B");
     }
 
     #[test]
     fn test_half_step() {
-        let note = Note { 
-            letter: Letter::A, 
-            accidental_count: 0, 
+        let note = Note {
+            letter: Letter::A,
+            accidental_count: 0,
         };
         assert_eq!(note.next(1).as_string(), "Bb");
     }
 
     #[test]
     fn test_bsharp_whole_step() {
-        let note = Note { 
-            letter: Letter::B, 
-            accidental_count: 1, 
+        let note = Note {
+            letter: Letter::B,
+            accidental_count: 1,
         };
         assert_eq!(note.next(2).as_string(), "C##");
     }
 
     #[test]
     fn test_bsharp_half_step() {
-        let note = Note { 
-            letter: Letter::B, 
-            accidental_count: 1, 
+        let note = Note {
+            letter: Letter::B,
+            accidental_count: 1,
         };
         assert_eq!(note.next(1).as_string(), "C#");
     }
 
     #[test]
     fn test_e_half_step() {
-        let note = Note { 
-            letter: Letter::E, 
-            accidental_count: 0, 
+        let note = Note {
+            letter: Letter::E,
+            accidental_count: 0,
         };
         assert_eq!(note.next(1).as_string(), "F");
     }
 
     #[test]
     fn test_e_whole_step() {
-        let note = Note { 
-            letter: Letter::E, 
-            accidental_count: 0, 
+        let note = Note {
+            letter: Letter::E,
+            accidental_count: 0,
         };
         assert_eq!(note.next(2).as_string(), "F#");
     }
@@ -220,7 +219,7 @@ mod tests {
     fn test_from_empty_string() {
         if let Err(e) = Note::from_string("") {
             assert_eq!(e, "No tonic note provided.");
-        } else { 
+        } else {
             panic!();
         }
     }
@@ -246,34 +245,40 @@ mod tests {
     #[test]
     fn test_natural_from_string() {
         let mut note = Note::from_string("A");
-        assert_eq!(note, 
-                   Ok(Note {
-                       letter: Letter::A,
-                       accidental_count: 0
-                   }));
+        assert_eq!(
+            note,
+            Ok(Note {
+                letter: Letter::A,
+                accidental_count: 0
+            })
+        );
         note = Note::from_string("F");
-        assert_eq!(note, 
-                   Ok(Note {
-                       letter: Letter::F,
-                       accidental_count: 0
-                   }));
+        assert_eq!(
+            note,
+            Ok(Note {
+                letter: Letter::F,
+                accidental_count: 0
+            })
+        );
     }
 
     #[test]
     fn test_accidental_from_string() {
         let mut note = Note::from_string("A#");
-        assert_eq!(note, 
-                   Ok(Note {
-                       letter: Letter::A,
-                       accidental_count: 1
-                   }));
+        assert_eq!(
+            note,
+            Ok(Note {
+                letter: Letter::A,
+                accidental_count: 1
+            })
+        );
         note = Note::from_string("Gb");
-        assert_eq!(note, 
-                   Ok(Note {
-                       letter: Letter::G,
-                       accidental_count: -1 
-                   }));
+        assert_eq!(
+            note,
+            Ok(Note {
+                letter: Letter::G,
+                accidental_count: -1
+            })
+        );
     }
-
 }
-

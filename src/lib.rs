@@ -16,25 +16,25 @@ pub enum Mode {
 impl Mode {
     fn intervals(&self) -> [i32; 7] {
         match *self {
-            Mode::Ionian     => [2,2,1,2,2,2,1],
-            Mode::Dorian     => [2,1,2,2,2,1,2],
-            Mode::Phrygian   => [1,2,2,2,1,2,2],
-            Mode::Lydian     => [2,2,2,1,2,2,1],
-            Mode::Mixolydian => [2,2,1,2,2,1,2],
-            Mode::Aeolian    => [2,1,2,2,1,2,2],
-            Mode::Locrian    => [1,2,2,1,2,2,2],
+            Mode::Ionian => [2, 2, 1, 2, 2, 2, 1],
+            Mode::Dorian => [2, 1, 2, 2, 2, 1, 2],
+            Mode::Phrygian => [1, 2, 2, 2, 1, 2, 2],
+            Mode::Lydian => [2, 2, 2, 1, 2, 2, 1],
+            Mode::Mixolydian => [2, 2, 1, 2, 2, 1, 2],
+            Mode::Aeolian => [2, 1, 2, 2, 1, 2, 2],
+            Mode::Locrian => [1, 2, 2, 1, 2, 2, 2],
         }
     }
 
     fn name(&self) -> &'static str {
         match *self {
-            Mode::Ionian     => "Major",
-            Mode::Dorian     => "Dorian",
-            Mode::Phrygian   => "Phrygian",
-            Mode::Lydian     => "Lydian",
+            Mode::Ionian => "Major",
+            Mode::Dorian => "Dorian",
+            Mode::Phrygian => "Phrygian",
+            Mode::Lydian => "Lydian",
             Mode::Mixolydian => "Mixolydian",
-            Mode::Aeolian    => "Minor",
-            Mode::Locrian    => "Locrian",
+            Mode::Aeolian => "Minor",
+            Mode::Locrian => "Locrian",
         }
     }
 }
@@ -45,7 +45,7 @@ pub struct Scale {
 }
 
 impl Scale {
-    pub fn new(tonic: Note, mode: Mode) -> Self  {
+    pub fn new(tonic: Note, mode: Mode) -> Self {
         Scale { tonic, mode }
     }
 
@@ -70,22 +70,20 @@ impl Scale {
                 } else {
                     Mode::Aeolian
                 }
-            },
-            Some(arg) => {
-                match arg.to_lowercase().as_str() {
-                    "maj" => Mode::Ionian,
-                    "major" => Mode::Ionian,
-                    "ionian" => Mode::Ionian,
-                    "dorian" => Mode::Dorian,
-                    "phrygian" => Mode::Phrygian,
-                    "lydian" => Mode::Lydian,
-                    "mixolydian" => Mode::Mixolydian,
-                    "min" => Mode::Aeolian,
-                    "minor" => Mode::Aeolian,
-                    "aeolian" => Mode::Aeolian,
-                    "locrian" => Mode::Locrian,
-                    other => return Err(format!("Invalid argument: {}", other)),
-                }
+            }
+            Some(arg) => match arg.to_lowercase().as_str() {
+                "maj" => Mode::Ionian,
+                "major" => Mode::Ionian,
+                "ionian" => Mode::Ionian,
+                "dorian" => Mode::Dorian,
+                "phrygian" => Mode::Phrygian,
+                "lydian" => Mode::Lydian,
+                "mixolydian" => Mode::Mixolydian,
+                "min" => Mode::Aeolian,
+                "minor" => Mode::Aeolian,
+                "aeolian" => Mode::Aeolian,
+                "locrian" => Mode::Locrian,
+                other => return Err(format!("Invalid argument: {}", other)),
             },
         };
         Ok(Scale::new(tonic, mode))
@@ -106,4 +104,3 @@ impl Scale {
         format!("{} {}", self.tonic.as_string(), self.mode.name())
     }
 }
-
