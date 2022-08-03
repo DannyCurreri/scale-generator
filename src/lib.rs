@@ -94,13 +94,13 @@ impl Scale {
         let mut current_note = self.tonic;
 
         for step in self.mode.intervals() {
-            notes.push(current_note.as_string());
+            notes.push(format!("{}", current_note));
             current_note = current_note.next(step);
         }
         notes
     }
 
     pub fn name(&self) -> String {
-        format!("{} {}", self.tonic.as_string(), self.mode.name())
+        format!("{} {}", self.tonic, self.mode.name())
     }
 }

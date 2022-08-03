@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Note {
     letter: Letter,
@@ -48,8 +50,10 @@ impl Note {
             accidental_count,
         }
     }
+}
 
-    pub fn as_string(&self) -> String {
+impl fmt::Display for Note {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut accidental = String::new();
         if self.accidental_count > 0 {
             for _ in 0..self.accidental_count {
@@ -60,20 +64,12 @@ impl Note {
                 accidental.push_str("b");
             }
         }
-        format!("{}{}", self.letter.as_str(), accidental)
+        write!(f, "{}{}", self.letter.as_str(), accidental)
     }
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
-pub enum Letter {
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    G,
-}
+pub enum Letter { A, B, C, D, E, F, G }
 
 impl Letter {
     fn next(&self) -> Self {
@@ -140,7 +136,7 @@ mod tests {
             letter: Letter::A,
             accidental_count: 1,
         };
-        assert_eq!(note.as_string(), "A#");
+        assert_eq!(format!("{}", note), "A#");
     }
 
     #[test]
@@ -149,7 +145,7 @@ mod tests {
             letter: Letter::A,
             accidental_count: -1,
         };
-        assert_eq!(note.as_string(), "Ab");
+        assert_eq!(format!("{}", note), "Ab");
     }
 
     #[test]
@@ -158,7 +154,7 @@ mod tests {
             letter: Letter::A,
             accidental_count: 0,
         };
-        assert_eq!(note.as_string(), "A");
+        assert_eq!(format!("{}", note), "A");
     }
 
     #[test]
@@ -167,7 +163,7 @@ mod tests {
             letter: Letter::A,
             accidental_count: 0,
         };
-        assert_eq!(note.next(2).as_string(), "B");
+        assert_eq!(format!("{}", note.next(2)), "B");
     }
 
     #[test]
@@ -176,7 +172,7 @@ mod tests {
             letter: Letter::A,
             accidental_count: 0,
         };
-        assert_eq!(note.next(1).as_string(), "Bb");
+        assert_eq!(format!("{}", note.next(1)), "Bb");
     }
 
     #[test]
@@ -185,7 +181,7 @@ mod tests {
             letter: Letter::B,
             accidental_count: 1,
         };
-        assert_eq!(note.next(2).as_string(), "C##");
+        assert_eq!(format!("{}", note.next(2)), "C##");
     }
 
     #[test]
@@ -194,7 +190,7 @@ mod tests {
             letter: Letter::B,
             accidental_count: 1,
         };
-        assert_eq!(note.next(1).as_string(), "C#");
+        assert_eq!(format!("{}", note.next(1)), "C#");
     }
 
     #[test]
@@ -203,7 +199,7 @@ mod tests {
             letter: Letter::E,
             accidental_count: 0,
         };
-        assert_eq!(note.next(1).as_string(), "F");
+        assert_eq!(format!("{}", note.next(1)), "F");
     }
 
     #[test]
@@ -212,7 +208,7 @@ mod tests {
             letter: Letter::E,
             accidental_count: 0,
         };
-        assert_eq!(note.next(2).as_string(), "F#");
+        assert_eq!(format!("{}", note.next(2)), "F#");
     }
 
     #[test]
