@@ -1,4 +1,5 @@
 use std::fmt;
+use std::str::FromStr;
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Note {
@@ -8,13 +9,20 @@ pub struct Note {
 
 impl Note {
     pub fn new(letter: Letter, accidental_count: i32) -> Self {
-        Note {
-            letter,
-            accidental_count,
-        }
+        Note { letter, accidental_count }
     }
 
-    pub fn from_string(input: &str) -> Result<Self, &'static str> {
+    pub fn next(&self, step: i32) -> Self {
+        let letter = self.letter.next();
+        let accidental_count = self.accidental_count
+            + step - letter.incremental_value();
+        Note { letter, accidental_count }
+    }
+}
+
+impl FromStr for Note {
+    type Err = &'static str;
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
         let mut input = input.chars();
         let letter = match input.next() {
             Some(c) => match c.to_ascii_uppercase() {
@@ -39,16 +47,6 @@ impl Note {
             return Err("Invalid tonic note");
         }
         Ok(Note::new(letter, accidental_count))
-    }
-
-    pub fn next(&self, step: i32) -> Self {
-        let letter = self.letter.next();
-        let accidental_count = self.accidental_count + step - letter.incremental_value();
-
-        Note {
-            letter,
-            accidental_count,
-        }
     }
 }
 
@@ -216,7 +214,7 @@ mod tests {
 
     #[test]
     fn test_from_empty_string() {
-        if let Err(e) = Note::from_string("") {
+        if let Err(e) = Note::from_str("") {
             assert_eq!(e, "No tonic note provided.");
         } else {
             panic!();
@@ -225,7 +223,7 @@ mod tests {
 
     #[test]
     fn test_from_invalid_string() {
-        if let Err(e) = Note::from_string("X") {
+        if let Err(e) = Note::from_str("X") {
             assert_eq!(e, "Invalid tonic note");
         } else {
             panic!();
@@ -234,7 +232,7 @@ mod tests {
 
     #[test]
     fn test_from_invalid_accidental() {
-        if let Err(e) = Note::from_string("A@") {
+        if let Err(e) = Note::from_str("A@") {
             assert_eq!(e, "Invalid tonic note");
         } else {
             panic!();
@@ -243,7 +241,7 @@ mod tests {
 
     #[test]
     fn test_natural_from_string() {
-        let mut note = Note::from_string("A");
+        let mut note = Note::from_str("A");
         assert_eq!(
             note,
             Ok(Note {
@@ -251,7 +249,7 @@ mod tests {
                 accidental_count: 0
             })
         );
-        note = Note::from_string("F");
+        note = Note::from_str("F");
         assert_eq!(
             note,
             Ok(Note {
@@ -263,7 +261,7 @@ mod tests {
 
     #[test]
     fn test_accidental_from_string() {
-        let mut note = Note::from_string("A#");
+        let mut note = Note::from_str("A#");
         assert_eq!(
             note,
             Ok(Note {
@@ -271,7 +269,7 @@ mod tests {
                 accidental_count: 1
             })
         );
-        note = Note::from_string("Gb");
+        note = Note::from_str("Gb");
         assert_eq!(
             note,
             Ok(Note {

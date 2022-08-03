@@ -1,6 +1,7 @@
 use std::env;
 pub mod notes;
 use notes::Note;
+use std::str::FromStr;
 
 #[derive(Copy, Clone)]
 pub enum Mode {
@@ -58,7 +59,7 @@ impl Scale {
             None => return Err("No tonic note provided".to_string()),
         };
 
-        let tonic = match Note::from_string(&tonic_str) {
+        let tonic = match Note::from_str(&tonic_str) {
             Ok(note) => note,
             Err(e) => return Err(e.to_string()),
         };
