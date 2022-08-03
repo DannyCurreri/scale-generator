@@ -64,7 +64,7 @@ impl fmt::Display for Note {
                 accidental.push_str("b");
             }
         }
-        write!(f, "{}{}", self.letter.as_str(), accidental)
+        write!(f, "{}{}", self.letter, accidental)
     }
 }
 
@@ -95,9 +95,11 @@ impl Letter {
             Letter::G => 2,
         }
     }
+}
 
-    fn as_str(&self) -> &'static str {
-        match self {
+impl fmt::Display for Letter {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let letter = match self {
             Letter::A => "A",
             Letter::B => "B",
             Letter::C => "C",
@@ -105,7 +107,8 @@ impl Letter {
             Letter::E => "E",
             Letter::F => "F",
             Letter::G => "G",
-        }
+        };
+        write!(f, "{}", letter)
     }
 }
 
@@ -127,7 +130,7 @@ mod tests {
 
     #[test]
     fn test_str() {
-        assert_eq!(Letter::A.as_str(), "A");
+        assert_eq!(format!("{}", Letter::A), "A");
     }
 
     #[test]
