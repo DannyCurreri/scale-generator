@@ -1,42 +1,39 @@
 use std::env;
-pub mod notes;
-use notes::Note;
+use std::fmt;
 use std::str::FromStr;
 
+pub mod notes;
+use notes::Note;
+
 #[derive(Copy, Clone)]
-pub enum Mode {
-    Ionian,
-    Dorian,
-    Phrygian,
-    Lydian,
-    Mixolydian,
-    Aeolian,
-    Locrian,
-}
+pub enum Mode {Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, Locrian}
 
 impl Mode {
     fn intervals(&self) -> [i32; 7] {
         match *self {
-            Mode::Ionian => [2, 2, 1, 2, 2, 2, 1],
-            Mode::Dorian => [2, 1, 2, 2, 2, 1, 2],
-            Mode::Phrygian => [1, 2, 2, 2, 1, 2, 2],
-            Mode::Lydian => [2, 2, 2, 1, 2, 2, 1],
+            Mode::Ionian     => [2, 2, 1, 2, 2, 2, 1],
+            Mode::Dorian     => [2, 1, 2, 2, 2, 1, 2],
+            Mode::Phrygian   => [1, 2, 2, 2, 1, 2, 2],
+            Mode::Lydian     => [2, 2, 2, 1, 2, 2, 1],
             Mode::Mixolydian => [2, 2, 1, 2, 2, 1, 2],
-            Mode::Aeolian => [2, 1, 2, 2, 1, 2, 2],
-            Mode::Locrian => [1, 2, 2, 1, 2, 2, 2],
+            Mode::Aeolian    => [2, 1, 2, 2, 1, 2, 2],
+            Mode::Locrian    => [1, 2, 2, 1, 2, 2, 2],
         }
     }
+}
 
-    fn name(&self) -> &'static str {
-        match *self {
-            Mode::Ionian => "Major",
-            Mode::Dorian => "Dorian",
-            Mode::Phrygian => "Phrygian",
-            Mode::Lydian => "Lydian",
+impl fmt::Display for Mode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let name = match *self {
+            Mode::Ionian     => "Major",
+            Mode::Dorian     => "Dorian",
+            Mode::Phrygian   => "Phrygian",
+            Mode::Lydian     => "Lydian",
             Mode::Mixolydian => "Mixolydian",
-            Mode::Aeolian => "Minor",
-            Mode::Locrian => "Locrian",
-        }
+            Mode::Aeolian    => "Minor",
+            Mode::Locrian    => "Locrian",
+        };
+        write!(f, "{}", name)
     }
 }
 
@@ -73,17 +70,17 @@ impl Scale {
                 }
             }
             Some(arg) => match arg.to_lowercase().as_str() {
-                "maj" => Mode::Ionian,
-                "major" => Mode::Ionian,
-                "ionian" => Mode::Ionian,
-                "dorian" => Mode::Dorian,
-                "phrygian" => Mode::Phrygian,
-                "lydian" => Mode::Lydian,
+                "maj"        => Mode::Ionian,
+                "major"      => Mode::Ionian,
+                "ionian"     => Mode::Ionian,
+                "dorian"     => Mode::Dorian,
+                "phrygian"   => Mode::Phrygian,
+                "lydian"     => Mode::Lydian,
                 "mixolydian" => Mode::Mixolydian,
-                "min" => Mode::Aeolian,
-                "minor" => Mode::Aeolian,
-                "aeolian" => Mode::Aeolian,
-                "locrian" => Mode::Locrian,
+                "min"        => Mode::Aeolian,
+                "minor"      => Mode::Aeolian,
+                "aeolian"    => Mode::Aeolian,
+                "locrian"    => Mode::Locrian,
                 other => return Err(format!("Invalid argument: {}", other)),
             },
         };
@@ -100,8 +97,15 @@ impl Scale {
         }
         notes
     }
+}
 
-    pub fn name(&self) -> String {
-        format!("{} {}", self.tonic, self.mode.name())
+impl fmt::Display for Scale {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let notes: String = self
+            .enumerate()
+            .iter()
+            .map(|note| format!("{} ", note))
+            .collect();
+        write!(f, "{} {} scale: {}", self.tonic, self.mode, notes)
     }
 }
