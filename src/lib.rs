@@ -53,7 +53,7 @@ impl Scale {
 
         let tonic_str = match args.next() {
             Some(s) => s,
-            None => return Err("No tonic note provided".to_string()),
+            None => return Err("No tonic note provided.".to_string()),
         };
 
         let tonic = match Note::from_str(&tonic_str) {

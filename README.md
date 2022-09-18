@@ -1,25 +1,45 @@
 # Scale Generator
 
-Generate diatonic scales from the command line.
+Why deal with browsers, search engines and loading entire web pages just to look up the notes of a musical scale? Do it in a flash right in the terminal. Scale Generator will print any of the seven diatonic modes for any root note with at most one accidental, for 147 possible scales. It will always provide the musically correct phrasing; that is to say, each note letter A-G will appear exactly once with their accidentals reflecting the scale intervals.
 
-## Instructions
+## Install
 
-Requires Rust and Cargo installed on machine.
+Will build and install a Rust binary called `scg`
 
-Clone repository and from project folder run with cargo run.
+Prerequisite: Must have [Rust](https://rustup.rs/) installed on machine.
 
-The program accepts two arguments. The first is mandatory and is the tonic note of the scale to be generated, represented by a letter A-G optionally followed by '#' or 'b' for sharp or flat. The second argument is optional and specifies the type of scale (mode) to be generated. If a second argument is not provided, an upper case tonic will default to a major scale and a lower case tonic to a minor scale. Current accepted scale types are any of the seven diatonic modes.
+    git clone https://github.com/DannyCurreri/scale-generator.git
+    cargo install --path scale_generator
+
+## Usage
+
+usage: scg tonic_note [mode]
+
+    tonic_note: <note letter>['#' | 'b']
+
+    mode args:
+        major/maj,
+        minor/min,
+        ionian,
+        dorian,
+        phrygian,
+        lydian,
+        mixolydian,
+        aeolian,
+        locrian
+
+If `mode` is not provided, an upper case tonic note defaults to major and lower case defaults to minor.
 
 ## Examples
 
-    $ cargo run C
-    > C Major scale: C D E F G A B
+    $ scg C
+    C Major scale: C D E F G A B
 
-    $ cargo run a
-    > A Minor scale: A B C D E F G
+    $ scg a
+    A Minor scale: A B C D E F G
 
-    $ cargo run C# Dorian
-    > C# Dorian scale: C# D# E F# G# A# B
+    $ scg C# dorian
+    C# Dorian scale: C# D# E F# G# A# B
 
-    $ cargo run Ab Mixolydian
-    > Ab Mixolydian scale: Ab Bb C Db Eb F Gb
+    $ scg Ab mixolydian
+    Ab Mixolydian scale: Ab Bb C Db Eb F Gb
