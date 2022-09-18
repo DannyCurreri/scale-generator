@@ -13,7 +13,7 @@ Prerequisite: Must have [Rust](https://rustup.rs/) installed on machine.
 
 ## Usage
 
-usage: scg tonic_note [mode]
+    usage: scg tonic_note [mode]
 
     tonic_note: <note letter>['#' | 'b']
 
